@@ -50,8 +50,16 @@ void TopologyStatImpl::UpdateChunkServerStat(ChunkServerIdType csId,
     }
     auto it = chunkServerStats_.find(csId);
     if (it != chunkServerStats_.end()) {
-        int64_t diff = stat.chunkFilepoolSize - it->second.chunkFilepoolSize;
-        ChunkPoolSize_[belongPhysicalPoolId] += diff;
+        uint64_t diff = 0;
+
+        if (stat.chunkFilepoolSize > it->second.chunkFilepoolSize) {
+            diff = stat.chunkFilepoolSize - it->second.chunkFilepoolSize;
+            ChunkPoolSize_[belongPhysicalPoolId] += diff;
+        } else {
+            diff = it->second.chunkFilepoolSize - stat.chunkFilepoolSize;
+            ChunkPoolSize_[belongPhysicalPoolId] -= diff;
+        }
+
         it->second = stat;
     } else {
         chunkServerStats_.emplace(csId, stat);
